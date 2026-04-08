@@ -1,7 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="Demo PSAR API")
 
-@app.get("/")
-def home():
-    return {"message": "Привет, demo.psar.by работает на FastAPI 🚀"}
+templates = Jinja2Templates(directory="app/templates")
+
+
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse(
+        name="index.html",
+        request=request
+    )
