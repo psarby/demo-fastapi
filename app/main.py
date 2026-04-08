@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
+from fastapi import Form
 
 app = FastAPI(title="Demo PSAR API")
 
@@ -13,3 +14,14 @@ def home(request: Request):
         name="index.html",
         request=request
     )
+
+@app.post("/hello", response_class=HTMLResponse)
+def hello(request: Request, name: str = Form(...)):
+    return templates.TemplateResponse(
+    name="index.html",
+    request=request,
+    context={
+        "message": f"Привет, {name} 👋"
+    }
+)
+

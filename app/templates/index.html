@@ -36,6 +36,17 @@
       <p>VPS + Docker + OpenResty + FastAPI</p>
       <p><a href="/docs">Открыть Swagger Docs</a></p>
    </div>
+
+   <form action="/hello" method="post">
+      <input type="text" name="name" placeholder="Введите имя" required>
+      <br><br>
+      <button type="submit">Отправить</button>
+   </form>
+
+   {% if message %}
+   <p>{{ message }}</p>
+   {% endif %}
+
 </body>
 
 </html>
