@@ -80,3 +80,19 @@ def create_visitor(visitor: VisitorCreate):
         "id": new_visitor.id,
         "name": new_visitor.name
     }
+
+@app.delete("/api/visitors/{visitor_id}")
+def delete_visitor(visitor_id: int):
+    db = SessionLocal()
+
+    visitor = db.query(Visitor).filter(Visitor.id == visitor_id).first()
+
+    if not visitor:
+        db.close()
+        return {"error": "Visitor not found"}
+
+    db.delete(visitor)
+    db.commit()
+    db.close()
+
+    return {"message": f"Visitor {visitor_id} deleted"}
