@@ -13,9 +13,17 @@ from .auth import create_access_token
 from fastapi import Header
 from .auth import verify_token
 
+from .models import User
+from .auth import hash_password
+
+
 
 class VisitorCreate(BaseModel):
     name: str
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
 
 app = FastAPI(title="Demo PSAR API")
 
@@ -140,4 +148,28 @@ def get_me(authorization: str = Header(...)):
     return {
         "username": username,
         "message": "JWT works"
+    }
+
+@app.post("/api/register")
+def register(user: UserCreate):
+    db = SessionLocal()
+
+    existing_user = db.query(User).filter(User.username == user.username).first()
+    if existing_user:
+        db.close()
+        return {"error": "Username already exists"}
+
+    new_user = User(
+        username=user.username,
+        password=hash_password(user.password)
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    db.close()
+
+    return {
+        "id": new_user.id,
+        "username": new_user.username
     }

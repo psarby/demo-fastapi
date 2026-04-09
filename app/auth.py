@@ -22,3 +22,14 @@ def verify_token(token: str):
         return payload.get("sub")
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(
+    schemes=["pbkdf2_sha256"],
+    deprecated="auto"
+)
+
+
+def hash_password(password: str):
+    return pwd_context.hash(password)
