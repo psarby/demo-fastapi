@@ -96,3 +96,23 @@ def delete_visitor(visitor_id: int):
     db.close()
 
     return {"message": f"Visitor {visitor_id} deleted"}
+
+@app.put("/api/visitors/{visitor_id}")
+def update_visitor(visitor_id: int, visitor_data: VisitorCreate):
+    db = SessionLocal()
+
+    visitor = db.query(Visitor).filter(Visitor.id == visitor_id).first()
+
+    if not visitor:
+        db.close()
+        return {"error": "Visitor not found"}
+
+    visitor.name = visitor_data.name
+    db.commit()
+    db.refresh(visitor)
+    db.close()
+
+    return {
+        "id": visitor.id,
+        "name": visitor.name
+    }
