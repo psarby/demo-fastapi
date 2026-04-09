@@ -47,6 +47,19 @@
    <p>{{ message }}</p>
    {% endif %}
 
+
+
+
+   <h2>Последние посетители</h2>
+   <ul>
+      {% for visitor in visitors %}
+      <li>{{ visitor.name }}</li>
+      {% endfor %}
+   </ul>
+
+
+
+
 </body>
 
 </html>
