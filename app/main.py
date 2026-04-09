@@ -6,6 +6,11 @@ from sqlalchemy.orm import Session
 from .database import SessionLocal, engine
 from .models import Base, Visitor
 
+from pydantic import BaseModel
+
+class VisitorCreate(BaseModel):
+    name: str
+
 app = FastAPI(title="Demo PSAR API")
 
 templates = Jinja2Templates(directory="app/templates")
@@ -45,3 +50,33 @@ def hello(request: Request, name: str = Form(...)):
             "visitors": visitors
         }
     )
+
+@app.get("/api/visitors")
+def get_visitors():
+    db = SessionLocal()
+    visitors = db.query(Visitor).order_by(Visitor.id.desc()).all()
+    db.close()
+
+    return [
+        {
+            "id": visitor.id,
+            "name": visitor.name
+        }
+        for visitor in visitors
+    ]
+
+@app.post("/api/visitors")
+def create_visitor(visitor: VisitorCreate):
+    db = SessionLocal()
+
+    new_visitor = Visitor(name=visitor.name)
+    db.add(new_visitor)
+    db.commit()
+    db.refresh(new_visitor)
+
+    db.close()
+
+    return {
+        "id": new_visitor.id,
+        "name": new_visitor.name
+    }
