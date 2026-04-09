@@ -8,6 +8,8 @@ from .models import Base, Visitor
 
 from pydantic import BaseModel
 
+from .auth import create_access_token
+
 class VisitorCreate(BaseModel):
     name: str
 
@@ -115,4 +117,13 @@ def update_visitor(visitor_id: int, visitor_data: VisitorCreate):
     return {
         "id": visitor.id,
         "name": visitor.name
+    }
+
+@app.post("/api/login")
+def login(visitor: VisitorCreate):
+    token = create_access_token({"sub": visitor.name})
+
+    return {
+        "access_token": token,
+        "token_type": "bearer"
     }
