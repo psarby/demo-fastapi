@@ -10,6 +10,10 @@ from pydantic import BaseModel
 
 from .auth import create_access_token
 
+from fastapi import Header
+from .auth import verify_token
+
+
 class VisitorCreate(BaseModel):
     name: str
 
@@ -126,4 +130,14 @@ def login(visitor: VisitorCreate):
     return {
         "access_token": token,
         "token_type": "bearer"
+    }
+
+@app.get("/api/me")
+def get_me(authorization: str = Header(...)):
+    token = authorization.replace("Bearer ", "")
+    username = verify_token(token)
+
+    return {
+        "username": username,
+        "message": "JWT works"
     }
