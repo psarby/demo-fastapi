@@ -8,6 +8,9 @@ class Visitor(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
 
+    owner_id = Column(Integer)
+    
+
 class User(Base):
     __tablename__ = "users"
 

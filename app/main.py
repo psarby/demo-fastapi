@@ -16,7 +16,9 @@ from .auth import verify_token
 from .models import User
 from .auth import hash_password
 
+from .auth import verify_password
 
+from fastapi import HTTPException
 
 class VisitorCreate(BaseModel):
     name: str
@@ -30,6 +32,19 @@ app = FastAPI(title="Demo PSAR API")
 templates = Jinja2Templates(directory="app/templates")
 
 Base.metadata.create_all(bind=engine)
+
+def get_current_user(authorization: str = Header(...)):
+    token = authorization.replace("Bearer ", "")
+    username = verify_token(token)
+
+    db = SessionLocal()
+    user = db.query(User).filter(User.username == username).first()
+    db.close()
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    return user
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -80,7 +95,11 @@ def get_visitors():
     ]
 
 @app.post("/api/visitors")
-def create_visitor(visitor: VisitorCreate):
+def create_visitor(
+    visitor: VisitorCreate,
+    authorization: str = Header(...)
+):
+    get_current_user(authorization)
     db = SessionLocal()
 
     new_visitor = Visitor(name=visitor.name)
@@ -96,7 +115,11 @@ def create_visitor(visitor: VisitorCreate):
     }
 
 @app.delete("/api/visitors/{visitor_id}")
-def delete_visitor(visitor_id: int):
+def delete_visitor(
+    visitor_id: int,
+    authorization: str = Header(...)
+):
+    get_current_user(authorization)
     db = SessionLocal()
 
     visitor = db.query(Visitor).filter(Visitor.id == visitor_id).first()
@@ -112,7 +135,12 @@ def delete_visitor(visitor_id: int):
     return {"message": f"Visitor {visitor_id} deleted"}
 
 @app.put("/api/visitors/{visitor_id}")
-def update_visitor(visitor_id: int, visitor_data: VisitorCreate):
+def update_visitor(
+    visitor_id: int,
+    visitor_data: VisitorCreate,
+    authorization: str = Header(...)
+):
+    get_current_user(authorization)
     db = SessionLocal()
 
     visitor = db.query(Visitor).filter(Visitor.id == visitor_id).first()
@@ -145,9 +173,16 @@ def get_me(authorization: str = Header(...)):
     token = authorization.replace("Bearer ", "")
     username = verify_token(token)
 
+    db = SessionLocal()
+    user = db.query(User).filter(User.username == username).first()
+    db.close()
+
+    if not user:
+        return {"error": "User not found"}
+
     return {
-        "username": username,
-        "message": "JWT works"
+        "id": user.id,
+        "username": user.username
     }
 
 @app.post("/api/register")
@@ -172,4 +207,27 @@ def register(user: UserCreate):
     return {
         "id": new_user.id,
         "username": new_user.username
+    }
+
+
+@app.post("/api/user-login")
+def user_login(user: UserCreate):
+    db = SessionLocal()
+
+    existing_user = db.query(User).filter(User.username == user.username).first()
+
+    if not existing_user:
+        db.close()
+        return {"error": "User not found"}
+
+    if not verify_password(user.password, existing_user.password):
+        db.close()
+        return {"error": "Invalid password"}
+
+    token = create_access_token({"sub": existing_user.username})
+    db.close()
+
+    return {
+        "access_token": token,
+        "token_type": "bearer"
     }
