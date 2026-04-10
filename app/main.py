@@ -1,24 +1,17 @@
-from fastapi import FastAPI, Request, Form
-from fastapi.templating import Jinja2Templates
+from fastapi import FastAPI, Request, Form, Header, HTTPException
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from .auth import (
+    create_access_token,
+    verify_token,
+    hash_password,
+    verify_password,
+)
 from .database import SessionLocal, engine
-from .models import Base, Visitor
-
-from pydantic import BaseModel
-
-from .auth import create_access_token
-
-from fastapi import Header
-from .auth import verify_token
-
-from .models import User
-from .auth import hash_password
-
-from .auth import verify_password
-
-from fastapi import HTTPException
+from .models import Base, Visitor, User
 
 class VisitorCreate(BaseModel):
     name: str
@@ -99,10 +92,13 @@ def create_visitor(
     visitor: VisitorCreate,
     authorization: str = Header(...)
 ):
-    get_current_user(authorization)
+    user = get_current_user(authorization)
     db = SessionLocal()
 
-    new_visitor = Visitor(name=visitor.name)
+    new_visitor = Visitor(
+    name=visitor.name,
+    owner_id=user.id
+)
     db.add(new_visitor)
     db.commit()
     db.refresh(new_visitor)
@@ -119,7 +115,7 @@ def delete_visitor(
     visitor_id: int,
     authorization: str = Header(...)
 ):
-    get_current_user(authorization)
+    user = get_current_user(authorization)
     db = SessionLocal()
 
     visitor = db.query(Visitor).filter(Visitor.id == visitor_id).first()
@@ -127,6 +123,10 @@ def delete_visitor(
     if not visitor:
         db.close()
         return {"error": "Visitor not found"}
+
+    if visitor.owner_id != user.id:
+        db.close()
+        raise HTTPException(status_code=403, detail="Forbidden")
 
     db.delete(visitor)
     db.commit()
@@ -140,7 +140,7 @@ def update_visitor(
     visitor_data: VisitorCreate,
     authorization: str = Header(...)
 ):
-    get_current_user(authorization)
+    user = get_current_user(authorization)
     db = SessionLocal()
 
     visitor = db.query(Visitor).filter(Visitor.id == visitor_id).first()
@@ -148,6 +148,10 @@ def update_visitor(
     if not visitor:
         db.close()
         return {"error": "Visitor not found"}
+
+    if visitor.owner_id != user.id:
+        db.close()
+        raise HTTPException(status_code=403, detail="Forbidden")
 
     visitor.name = visitor_data.name
     db.commit()
@@ -184,6 +188,26 @@ def get_me(authorization: str = Header(...)):
         "id": user.id,
         "username": user.username
     }
+
+@app.get("/api/my-visitors")
+def get_my_visitors(authorization: str = Header(...)):
+    user = get_current_user(authorization)
+    db = SessionLocal()
+
+    visitors = db.query(Visitor).filter(
+        Visitor.owner_id == user.id
+    ).all()
+
+    db.close()
+
+    return [
+        {
+            "id": v.id,
+            "name": v.name
+        }
+        for v in visitors
+    ]
+
 
 @app.post("/api/register")
 def register(user: UserCreate):
