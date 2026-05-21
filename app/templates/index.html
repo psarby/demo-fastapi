@@ -1,65 +1,47 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
 
-<head>
-   <title>Demo PSAR FastAPI</title>
-   <meta charset="UTF-8">
-   <style>
-      body {
-         font-family: Arial;
-         max-width: 700px;
-         margin: 50px auto;
-         background: #111;
-         color: #fff;
-         text-align: center;
-      }
+{% block title %}Demo PSAR{% endblock %}
 
-      a {
-         color: #4da3ff;
-         text-decoration: none;
-         font-size: 20px;
-      }
-
-      .box {
-         padding: 30px;
-         border: 1px solid #333;
-         border-radius: 12px;
-         background: #1b1b1b;
-      }
-   </style>
-</head>
-
-<body>
-   <div class="box">
-      <h1>🚀 Demo PSAR FastAPI</h1>
-      <p>Первый production Python backend успешно работает!</p>
-      <p>VPS + Docker + OpenResty + FastAPI</p>
-      <p><a href="/docs">Открыть Swagger Docs</a></p>
+{% block content %}
+<section class="hero">
+   <div>
+      <p class="eyebrow">FastAPI + PostgreSQL + JWT</p>
+      <h1>Demo PSAR Backend</h1>
+      <p class="lead">
+         A small production-style backend with auth, migrations, Dockerized PostgreSQL,
+         and a simple visitor dashboard.
+      </p>
+      <div class="actions">
+         <a class="button primary" href="/register">Create account</a>
+         <a class="button secondary" href="/dashboard">Open dashboard</a>
+      </div>
    </div>
+</section>
 
-   <form action="/hello" method="post">
-      <input type="text" name="name" placeholder="Введите имя" required>
-      <br><br>
-      <button type="submit">Отправить</button>
+<section class="grid two">
+   <form class="panel" action="/hello" method="post">
+      <h2>Public visitor form</h2>
+      <label for="name">Name</label>
+      <div class="inline-form">
+         <input type="text" id="name" name="name" placeholder="Enter a name" required>
+         <button type="submit">Send</button>
+      </div>
+      {% if message %}
+      <p class="message success">{{ message }}</p>
+      {% endif %}
    </form>
 
-   {% if message %}
-   <p>{{ message }}</p>
-   {% endif %}
-
-
-
-
-   <h2>Последние посетители</h2>
-   <ul>
-      {% for visitor in visitors %}
-      <li>{{ visitor.name }}</li>
-      {% endfor %}
-   </ul>
-
-
-
-
-</body>
-
-</html>
+   <section class="panel">
+      <h2>Latest visitors</h2>
+      {% if visitors %}
+      <ul class="list">
+         {% for visitor in visitors %}
+         <li>{{ visitor.name }}</li>
+         {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">No visitors yet.</p>
+      {% endif %}
+   </section>
+</section>
+{% endblock %}

@@ -3,31 +3,20 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
-<div class="card">
-   <h2>Регистрация</h2>
+<section class="auth-layout">
+   <form class="panel auth-card" data-auth-form="register">
+      <p class="eyebrow">New account</p>
+      <h1>Register</h1>
 
-   <input type="text" id="username" placeholder="Username">
-   <br>
-   <input type="password" id="password" placeholder="Password">
-   <br>
-   <button onclick="register()">Создать аккаунт</button>
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" autocomplete="username" required>
 
-   <p id="result"></p>
-</div>
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" autocomplete="new-password" minlength="4" required>
 
-<script>
-   async function register() {
-      const response = await fetch("/api/register", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({
-            username: document.getElementById("username").value,
-            password: document.getElementById("password").value
-         })
-      });
-
-      const data = await response.json();
-      document.getElementById("result").innerText = JSON.stringify(data);
-   }
-</script>
+      <button class="full-width" type="submit">Create account</button>
+      <p class="message" data-form-message></p>
+      <p class="muted">Already registered? <a href="/login">Login</a>.</p>
+   </form>
+</section>
 {% endblock %}

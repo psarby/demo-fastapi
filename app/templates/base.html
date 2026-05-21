@@ -1,35 +1,33 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 
 <head>
    <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>{% block title %}Demo PSAR{% endblock %}</title>
-   <style>
-      body {
-         font-family: Arial;
-         max-width: 900px;
-         margin: 40px auto;
-         padding: 20px;
-      }
-
-      input,
-      button {
-         padding: 10px;
-         margin: 5px 0;
-      }
-
-      .card {
-         border: 1px solid #ddd;
-         padding: 20px;
-         border-radius: 10px;
-         margin-bottom: 20px;
-      }
-   </style>
+   <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}">
+   {% block head %}{% endblock %}
 </head>
 
 <body>
-   <h1>🚀 Demo PSAR FastAPI</h1>
-   {% block content %}{% endblock %}
+   <header class="topbar">
+      <a class="brand" href="/">Demo PSAR</a>
+      <nav class="nav">
+         <a href="/docs">API Docs</a>
+         <a data-auth-link="guest" href="/login">Login</a>
+         <a data-auth-link="guest" href="/register">Register</a>
+         <a data-auth-link="user" href="/dashboard">Dashboard</a>
+         <button class="link-button" type="button" data-auth-link="user" data-logout>Logout</button>
+      </nav>
+   </header>
+
+   <main class="page">
+      {% block content %}{% endblock %}
+   </main>
+
+   <div class="toast" data-flash hidden></div>
+   <script type="module" src="{{ url_for('static', path='/js/auth.js') }}"></script>
+   {% block scripts %}{% endblock %}
 </body>
 
 </html>

@@ -3,165 +3,37 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="card">
-   <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
-      <h2 style="margin: 0;">Dashboard</h2>
-      <button type="button" onclick="logout()">Logout</button>
+<section class="dashboard-header">
+   <div>
+      <p class="eyebrow">Private area</p>
+      <h1>Dashboard</h1>
+      <p class="muted">Signed in as <strong data-current-user>loading...</strong></p>
    </div>
-</div>
+   <button type="button" data-logout>Logout</button>
+</section>
 
-<div class="card">
-   <h3>Add visitor</h3>
-   <form id="visitor-form">
-      <input type="text" id="visitor-name" placeholder="Visitor name" required>
-      <button type="submit">Add visitor</button>
+<section class="grid two">
+   <form class="panel" id="visitor-form">
+      <h2>Add visitor</h2>
+      <label for="visitor-name">Visitor name</label>
+      <div class="inline-form">
+         <input type="text" id="visitor-name" placeholder="Visitor name" required>
+         <button type="submit">Add</button>
+      </div>
+      <p class="message" id="form-message"></p>
    </form>
-   <p id="form-message"></p>
-</div>
 
-<div class="card">
-   <h3>My visitors</h3>
-   <ul id="visitors-list" style="padding-left: 20px;"></ul>
-   <p id="empty-state" style="display: none;">No visitors yet.</p>
-</div>
+   <section class="panel">
+      <div class="section-heading">
+         <h2>My visitors</h2>
+         <button class="secondary" type="button" id="refresh-visitors">Refresh</button>
+      </div>
+      <ul class="list visitors" id="visitors-list"></ul>
+      <p class="muted" id="empty-state" hidden>No visitors yet.</p>
+   </section>
+</section>
+{% endblock %}
 
-<script>
-   const token = localStorage.getItem("token");
-
-   if (!token) {
-      window.location.href = "/login";
-   }
-
-   document.getElementById("visitor-form").addEventListener("submit", async function (event) {
-      event.preventDefault();
-      await createVisitor();
-   });
-
-   function getAuthHeaders() {
-      return {
-         "Content-Type": "application/json",
-         "Authorization": `Bearer ${token}`
-      };
-   }
-
-   function logout() {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-   }
-
-   async function loadVisitors() {
-      try {
-         const response = await fetch("/api/my-visitors", {
-            headers: {
-               "Authorization": `Bearer ${token}`
-            }
-         });
-
-         if (response.status === 401) {
-            logout();
-            return;
-         }
-
-         const visitors = await response.json();
-         const list = document.getElementById("visitors-list");
-         const emptyState = document.getElementById("empty-state");
-
-         list.innerHTML = "";
-
-         if (!Array.isArray(visitors) || visitors.length === 0) {
-            emptyState.style.display = "block";
-            return;
-         }
-
-         emptyState.style.display = "none";
-
-         visitors.forEach(function (visitor) {
-            const item = document.createElement("li");
-            item.style.marginBottom = "10px";
-
-            const name = document.createElement("span");
-            name.textContent = visitor.name;
-
-            const deleteButton = document.createElement("button");
-            deleteButton.type = "button";
-            deleteButton.textContent = "Delete";
-            deleteButton.style.marginLeft = "10px";
-            deleteButton.addEventListener("click", function () {
-               deleteVisitor(visitor.id);
-            });
-
-            item.appendChild(name);
-            item.appendChild(deleteButton);
-            list.appendChild(item);
-         });
-      } catch (error) {
-         document.getElementById("form-message").innerText = "Failed to load visitors.";
-      }
-   }
-
-   async function createVisitor() {
-      const nameInput = document.getElementById("visitor-name");
-      const message = document.getElementById("form-message");
-      const name = nameInput.value.trim();
-
-      if (!name) {
-         message.innerText = "Visitor name is required.";
-         return;
-      }
-
-      try {
-         const response = await fetch("/api/visitors", {
-            method: "POST",
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ name: name })
-         });
-
-         if (response.status === 401) {
-            logout();
-            return;
-         }
-
-         if (!response.ok) {
-            message.innerText = "Failed to create visitor.";
-            return;
-         }
-
-         nameInput.value = "";
-         message.innerText = "";
-         await loadVisitors();
-      } catch (error) {
-         message.innerText = "Failed to create visitor.";
-      }
-   }
-
-   async function deleteVisitor(id) {
-      const message = document.getElementById("form-message");
-
-      try {
-         const response = await fetch(`/api/visitors/${id}`, {
-            method: "DELETE",
-            headers: {
-               "Authorization": `Bearer ${token}`
-            }
-         });
-
-         if (response.status === 401) {
-            logout();
-            return;
-         }
-
-         if (!response.ok) {
-            message.innerText = "Failed to delete visitor.";
-            return;
-         }
-
-         message.innerText = "";
-         await loadVisitors();
-      } catch (error) {
-         message.innerText = "Failed to delete visitor.";
-      }
-   }
-
-   loadVisitors();
-</script>
+{% block scripts %}
+<script type="module" src="{{ url_for('static', path='/js/dashboard.js') }}"></script>
 {% endblock %}

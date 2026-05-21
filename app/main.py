@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, Form, Header, HTTPException
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -10,8 +11,8 @@ from .auth import (
     hash_password,
     verify_password,
 )
-from .database import SessionLocal, engine
-from .models import Base, Visitor, User
+from .database import SessionLocal
+from .models import Visitor, User
 
 class VisitorCreate(BaseModel):
     name: str
@@ -22,9 +23,9 @@ class UserCreate(BaseModel):
 
 app = FastAPI(title="Demo PSAR API")
 
-templates = Jinja2Templates(directory="app/templates")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-Base.metadata.create_all(bind=engine)
+templates = Jinja2Templates(directory="app/templates")
 
 def get_current_user(authorization: str = Header(...)):
     token = authorization.replace("Bearer ", "")
@@ -68,7 +69,7 @@ def hello(request: Request, name: str = Form(...)):
         name="index.html",
         request=request,
         context={
-            "message": f"Привет, {name} 👋",
+            "message": f"Hello, {name}!",
             "visitors": visitors
         }
     )
