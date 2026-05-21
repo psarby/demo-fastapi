@@ -121,7 +121,7 @@ async function handleLogin(form) {
       return;
    }
 
-   message.textContent = data.error || "Login failed.";
+   message.textContent = data.detail || data.error || "Login failed.";
 }
 
 async function handleRegister(form) {
@@ -147,7 +147,7 @@ async function handleRegister(form) {
       return;
    }
 
-   message.textContent = data.error || "Registration failed.";
+   message.textContent = data.detail || data.error || "Registration failed.";
 }
 
 document.addEventListener("DOMContentLoaded", () => {

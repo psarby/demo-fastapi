@@ -217,7 +217,7 @@ def register(user: UserCreate):
     existing_user = db.query(User).filter(User.username == user.username).first()
     if existing_user:
         db.close()
-        return {"error": "Username already exists"}
+        raise HTTPException(status_code=409, detail="Username already exists")
 
     new_user = User(
         username=user.username,
@@ -243,11 +243,11 @@ def user_login(user: UserCreate):
 
     if not existing_user:
         db.close()
-        return {"error": "User not found"}
+        raise HTTPException(status_code=401, detail="Invalid username or password")
 
     if not verify_password(user.password, existing_user.password):
         db.close()
-        return {"error": "Invalid password"}
+        raise HTTPException(status_code=401, detail="Invalid username or password")
 
     token = create_access_token({"sub": existing_user.username})
     db.close()
