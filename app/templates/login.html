@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="card">
+   <h2>Вход</h2>
+
+   <input type="text" id="username" placeholder="Username">
+   <br>
+   <input type="password" id="password" placeholder="Password">
+   <br>
+   <button type="button" onclick="login()">Войти</button>
+
+   <p id="result"></p>
+</div>
+
+<script>
+   async function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      const result = document.getElementById("result");
+
+      const response = await fetch("/api/user-login", {
+         method: "POST",
+         headers: {
+            "Content-Type": "application/json"
+         },
+         body: JSON.stringify({
+            username: username,
+            password: password
+         })
+      });
+
+      const data = await response.json();
+
+      if (data.access_token) {
+         localStorage.setItem("token", data.access_token);
+         window.location.href = "/dashboard";
+         return;
+      }
+
+      result.innerText = data.error || "Ошибка входа";
+   }
+</script>
+{% endblock %}

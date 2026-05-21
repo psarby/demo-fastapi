@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+   <meta charset="UTF-8">
+   <title>{% block title %}Demo PSAR{% endblock %}</title>
+   <style>
+      body {
+         font-family: Arial;
+         max-width: 900px;
+         margin: 40px auto;
+         padding: 20px;
+      }
+
+      input,
+      button {
+         padding: 10px;
+         margin: 5px 0;
+      }
+
+      .card {
+         border: 1px solid #ddd;
+         padding: 20px;
+         border-radius: 10px;
+         margin-bottom: 20px;
+      }
+   </style>
+</head>
+
+<body>
+   <h1>🚀 Demo PSAR FastAPI</h1>
+   {% block content %}{% endblock %}
+</body>
+
+</html>

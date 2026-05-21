@@ -255,3 +255,26 @@ def user_login(user: UserCreate):
         "access_token": token,
         "token_type": "bearer"
     }
+
+@app.get("/login", response_class=HTMLResponse)
+def login_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html"
+    )
+
+
+@app.get("/register", response_class=HTMLResponse)
+def register_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="register.html"
+    )
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def dashboard_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="dashboard.html"
+    )
